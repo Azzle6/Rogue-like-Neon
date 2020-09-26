@@ -1,1 +1,1 @@
-Rogue-like Neon
+RogueLike
