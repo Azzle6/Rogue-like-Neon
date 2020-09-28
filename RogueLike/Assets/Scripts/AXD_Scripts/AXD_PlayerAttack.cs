@@ -6,14 +6,20 @@ public class AXD_PlayerAttack : MonoBehaviour
 {
 
     private enum AttackType { Gash, Thrust}
+    private Vector3 lastDirection;
     public Transform attackPoint;
     public ELC_PlayerMoves player;
-    public int Damage;
+    public int GashDamage, ThrustDamage;
     [Header ("Attack Settings")]
     [Range (0,5)]
-    public float areaRadius;
+    public float gashAreaRadius;
+    [Range(0, 5)]
+    public float thrustWidth;
+    [Range(0, 5)]
+    public float thrustlength;
     public float attackRate;
     public float nextAttackTime;
+
 
     void Start()
     {
@@ -21,19 +27,20 @@ public class AXD_PlayerAttack : MonoBehaviour
     }
     void Update()
     {
-        attackPoint.position = (transform.position + player.getPlayerMoves().normalized);
-        Debug.Log("Attaquer ? "+(Time.time >= nextAttackTime));
+        if (player.getPlayerMoves() != Vector3.zero)
+        {
+            attackPoint.position = (transform.position + player.getPlayerMoves().normalized);
+            lastDirection = player.getPlayerMoves();
+        }
         if (Time.time >= nextAttackTime)
         {
             if (Input.GetAxisRaw("Gash") != 0)
             {
-                Debug.Log("Gash : " + player.getPlayerMoves().ToString());
                 Attack(AttackType.Gash);
             }
             else if (Input.GetAxisRaw("Thrust") != 0)
             {
-                Debug.Log("Thrust : " + player.getPlayerMoves().ToString());
-                this.Attack(AttackType.Thrust);
+                Attack(AttackType.Thrust);
             }
             
         }
@@ -41,10 +48,21 @@ public class AXD_PlayerAttack : MonoBehaviour
 
     private void Attack(AttackType type)
     {
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position,areaRadius);
-        foreach(Collider2D enemy in hitEnemies)
+        if (type == AttackType.Gash)
         {
-            enemy.GetComponent<AXD_Enemy>().GetHit(Damage);
+            Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, gashAreaRadius);
+            foreach (Collider2D enemy in hitEnemies)
+            {
+                enemy.GetComponent<AXD_Enemy>().GetHit(GashDamage);
+            }
+
+        } else if (type == AttackType.Thrust)
+        {
+            Collider2D[] hitEnemies = Physics2D.OverlapBoxAll(attackPoint.position, new Vector2(thrustWidth, thrustlength), Vector2.Angle(Vector2.up,lastDirection));
+            foreach(Collider2D enemy in hitEnemies)
+            {
+                enemy.GetComponent<AXD_Enemy>().GetHit(ThrustDamage);
+            }
         }
         nextAttackTime = Time.time + 1f / attackRate;
     }
@@ -53,6 +71,9 @@ public class AXD_PlayerAttack : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         if (attackPoint != null)
-            Gizmos.DrawWireSphere(attackPoint.position, areaRadius);
+        {
+            //Gizmos.DrawWireCube(attackPoint.position, new Vector3(thrustWidth, thrustlength, 0));
+            Gizmos.DrawWireSphere(attackPoint.position, gashAreaRadius);
+        }
     }
 }
