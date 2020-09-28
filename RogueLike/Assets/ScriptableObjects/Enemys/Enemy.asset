@@ -19,6 +19,9 @@ MonoBehaviour:
   fleePlayer: 0
   stayAtDistance: 0
   distance: 0
+  fireBullets: 0
+  instantiateEnemyAtDeath: 0
+  dash: 0
   sprite: {fileID: 0}
   AIScript: {fileID: 0}
   Animator: {fileID: 0}
